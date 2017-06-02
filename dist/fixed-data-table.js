@@ -1292,6 +1292,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return emptyFunction.thatReturnsNull;
 	    }
 
+	    for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
+	      var checker = arrayOfTypeCheckers[i];
+	      if (typeof checker !== 'function') {
+	        warning(
+	          false,
+	          'Invalid argument supplid to oneOfType. Expected an array of check functions, but ' +
+	          'received %s at index %s.',
+	          getPostfixForTypeWarning(checker),
+	          i
+	        );
+	        return emptyFunction.thatReturnsNull;
+	      }
+	    }
+
 	    function validate(props, propName, componentName, location, propFullName) {
 	      for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
 	        var checker = arrayOfTypeCheckers[i];
@@ -1424,6 +1438,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // This handles more types than `getPropType`. Only used for error messages.
 	  // See `createPrimitiveTypeChecker`.
 	  function getPreciseType(propValue) {
+	    if (typeof propValue === 'undefined' || propValue === null) {
+	      return '' + propValue;
+	    }
 	    var propType = getPropType(propValue);
 	    if (propType === 'object') {
 	      if (propValue instanceof Date) {
@@ -1433,6 +1450,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	    return propType;
+	  }
+
+	  // Returns a string that is postfixed to a warning about an invalid type.
+	  // For example, "undefined" or "of type array"
+	  function getPostfixForTypeWarning(value) {
+	    var type = getPreciseType(value);
+	    switch (type) {
+	      case 'array':
+	      case 'object':
+	        return 'an ' + type;
+	      case 'boolean':
+	      case 'date':
+	      case 'regexp':
+	        return 'a ' + type;
+	      default:
+	        return type;
+	    }
 	  }
 
 	  // Returns class name of the object, if any.
@@ -1732,11 +1766,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var emptyFunction = __webpack_require__(32);
 	var invariant = __webpack_require__(33);
+	var ReactPropTypesSecret = __webpack_require__(35);
 
 	module.exports = function() {
-	  // Important!
-	  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
-	  function shim() {
+	  function shim(props, propName, componentName, location, propFullName, secret) {
+	    if (secret === ReactPropTypesSecret) {
+	      // It is still safe when called from React.
+	      return;
+	    }
 	    invariant(
 	      false,
 	      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
@@ -1748,6 +1785,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function getShim() {
 	    return shim;
 	  };
+	  // Important!
+	  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
 	  var ReactPropTypes = {
 	    array: shim,
 	    bool: shim,
@@ -2170,6 +2209,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        offsetTop: 0,
 	        scrollLeft: state.scrollX,
 	        fixedColumns: state.groupHeaderFixedColumns,
+	        rightFixedColumns: state.groupHeaderRightFixedColumns,
 	        scrollableColumns: state.groupHeaderScrollableColumns,
 	        onColumnResize: this._onColumnResize
 	      });
@@ -2244,6 +2284,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        zIndex: 1,
 	        offsetTop: footOffsetTop,
 	        fixedColumns: state.footFixedColumns,
+	        rightFixedColumns: state.footRightFixedColumns,
 	        scrollableColumns: state.footScrollableColumns,
 	        scrollLeft: state.scrollX
 	      });
@@ -2262,6 +2303,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      offsetTop: headerOffsetTop,
 	      scrollLeft: state.scrollX,
 	      fixedColumns: state.headFixedColumns,
+	      rightFixedColumns: state.headRightFixedColumns,
 	      scrollableColumns: state.headScrollableColumns,
 	      onColumnResize: this._onColumnResize
 	    });
@@ -2315,6 +2357,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      firstRowIndex: state.firstRowIndex,
 	      firstRowOffset: state.firstRowOffset,
 	      fixedColumns: state.bodyFixedColumns,
+	      rightFixedColumns: state.bodyRightFixedColumns,
 	      height: state.bodyHeight,
 	      offsetTop: offsetTop,
 	      onRowClick: state.onRowClick,
@@ -2390,32 +2433,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var columnInfo = {};
 	    if (canReuseColumnSettings) {
 	      columnInfo.bodyFixedColumns = oldState.bodyFixedColumns;
+	      columnInfo.bodyRightFixedColumns = oldState.bodyRightFixedColumns;
 	      columnInfo.bodyScrollableColumns = oldState.bodyScrollableColumns;
 	      columnInfo.headFixedColumns = oldState.headFixedColumns;
+	      columnInfo.headRightFixedColumns = oldState.headRightFixedColumns;
 	      columnInfo.headScrollableColumns = oldState.headScrollableColumns;
 	      columnInfo.footFixedColumns = oldState.footFixedColumns;
+	      columnInfo.footRightFixedColumns = oldState.footRightFixedColumns;
 	      columnInfo.footScrollableColumns = oldState.footScrollableColumns;
 	    } else {
 	      var bodyColumnTypes = this._splitColumnTypes(columns);
 	      columnInfo.bodyFixedColumns = bodyColumnTypes.fixed;
+	      columnInfo.bodyRightFixedColumns = bodyColumnTypes.rightFixed;
 	      columnInfo.bodyScrollableColumns = bodyColumnTypes.scrollable;
 
 	      var headColumnTypes = this._splitColumnTypes(this._selectColumnElement(HEADER, columns));
 	      columnInfo.headFixedColumns = headColumnTypes.fixed;
+	      columnInfo.headRightFixedColumns = headColumnTypes.rightFixed;
 	      columnInfo.headScrollableColumns = headColumnTypes.scrollable;
 
 	      var footColumnTypes = this._splitColumnTypes(this._selectColumnElement(FOOTER, columns));
 	      columnInfo.footFixedColumns = footColumnTypes.fixed;
+	      columnInfo.footRightFixedColumns = footColumnTypes.rightFixed;
 	      columnInfo.footScrollableColumns = footColumnTypes.scrollable;
 	    }
 
 	    if (canReuseColumnGroupSettings) {
 	      columnInfo.groupHeaderFixedColumns = oldState.groupHeaderFixedColumns;
+	      columnInfo.groupHeaderRightFixedColumns = oldState.groupHeaderRightFixedColumns;
 	      columnInfo.groupHeaderScrollableColumns = oldState.groupHeaderScrollableColumns;
 	    } else {
 	      if (columnGroups) {
 	        var groupHeaderColumnTypes = this._splitColumnTypes(this._selectColumnElement(HEADER, columnGroups));
 	        columnInfo.groupHeaderFixedColumns = groupHeaderColumnTypes.fixed;
+	        columnInfo.groupHeaderRightFixedColumns = groupHeaderColumnTypes.rightFixed;
 	        columnInfo.groupHeaderScrollableColumns = groupHeaderColumnTypes.scrollable;
 	      }
 	    }
@@ -2503,11 +2554,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this._columnToScrollTo !== undefined) {
 	      // If selected column is a fixed column, don't scroll
 	      var fixedColumnsCount = columnInfo.bodyFixedColumns.length;
-	      if (this._columnToScrollTo >= fixedColumnsCount) {
+	      var rightFixedColumnsCount = columnInfo.bodyRightFixedColumns.length;
+	      if (this._columnToScrollTo >= fixedColumnsCount && this._columnToScrollTo < columnInfo.bodyScrollableColumns.length - rightFixedColumnsCount) {
 	        var totalFixedColumnsWidth = 0;
 	        var i, column;
 	        for (i = 0; i < columnInfo.bodyFixedColumns.length; ++i) {
 	          column = columnInfo.bodyFixedColumns[i];
+	          totalFixedColumnsWidth += column.props.width;
+	        }
+
+	        for (i = 0; i < columnInfo.bodyRightFixedColumns; ++i) {
+	          column = columnInfo.bodyRightFixedColumns[i];
 	          totalFixedColumnsWidth += column.props.width;
 	        }
 
@@ -2609,16 +2666,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  _splitColumnTypes: function _splitColumnTypes( /*array*/columns) /*object*/{
 	    var fixedColumns = [];
+	    var rightFixedColumns = [];
 	    var scrollableColumns = [];
 	    for (var i = 0; i < columns.length; ++i) {
 	      if (columns[i].props.fixed) {
 	        fixedColumns.push(columns[i]);
+	      } else if (columns[i].props.rightFixed) {
+	        rightFixedColumns.push(columns[i]);
 	      } else {
 	        scrollableColumns.push(columns[i]);
 	      }
 	    }
 	    return {
 	      fixed: fixedColumns,
+	      rightFixed: rightFixedColumns,
 	      scrollable: scrollableColumns
 	    };
 	  },
@@ -4817,6 +4878,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    firstRowIndex: PropTypes.number.isRequired,
 	    firstRowOffset: PropTypes.number.isRequired,
 	    fixedColumns: PropTypes.array.isRequired,
+	    rightFixedColumns: PropTypes.array.isRequired,
 	    height: PropTypes.number.isRequired,
 	    offsetTop: PropTypes.number.isRequired,
 	    onRowClick: PropTypes.func,
@@ -4903,6 +4965,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        scrollLeft: Math.round(props.scrollLeft),
 	        offsetTop: Math.round(rowOffsetTop),
 	        fixedColumns: props.fixedColumns,
+	        rightFixedColumns: props.rightFixedColumns,
 	        scrollableColumns: props.scrollableColumns,
 	        onClick: props.onRowClick,
 	        onDoubleClick: props.onRowDoubleClick,
@@ -5520,6 +5583,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    fixedColumns: PropTypes.array.isRequired,
 
 	    /**
+	     * Array of <FixedDataTableColumn /> for the right-aligned fixed columns.
+	     */
+	    rightFixedColumns: PropTypes.array.isRequired,
+
+	    /**
 	     * Height of the row.
 	     */
 	    height: PropTypes.number.isRequired,
@@ -5583,6 +5651,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 
 	    var fixedColumnsWidth = this._getColumnsWidth(this.props.fixedColumns);
+	    var scrollableColumnsWidth = this._getColumnsWidth(this.props.scrollableColumns);
+	    var rightFixedColumnsWidth = this._getColumnsWidth(this.props.rightFixedColumns);
+
+	    var scrollableAreaWidth = this.props.width - (fixedColumnsWidth + rightFixedColumnsWidth);
+
 	    var fixedColumns = React.createElement(FixedDataTableCellGroup, {
 	      key: 'fixed_cells',
 	      isScrolling: this.props.isScrolling,
@@ -5595,16 +5668,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	      rowHeight: this.props.height,
 	      rowIndex: this.props.index
 	    });
-	    var columnsShadow = this._renderColumnsShadow(fixedColumnsWidth);
+
+	    var leftColumnsShadow = null;
+	    if (fixedColumnsWidth > 0) {
+	      leftColumnsShadow = this._renderLeftColumnsShadow(fixedColumnsWidth, this.props.scrollLeft > 0);
+	    }
+
 	    var scrollableColumns = React.createElement(FixedDataTableCellGroup, {
 	      key: 'scrollable_cells',
 	      isScrolling: this.props.isScrolling,
 	      height: this.props.height,
 	      left: this.props.scrollLeft,
 	      offsetLeft: fixedColumnsWidth,
-	      width: this.props.width - fixedColumnsWidth,
+	      width: scrollableAreaWidth,
 	      zIndex: 0,
 	      columns: this.props.scrollableColumns,
+	      onColumnResize: this.props.onColumnResize,
+	      rowHeight: this.props.height,
+	      rowIndex: this.props.index
+	    });
+
+	    var rightColumnsShadow = null;
+	    if (rightFixedColumnsWidth > 0) {
+	      rightColumnsShadow = this._renderRightColumnsShadow(this.props.width - rightFixedColumnsWidth, this.props.scrollLeft < scrollableColumnsWidth - scrollableAreaWidth);
+	    }
+
+	    var rightFixedColumns = React.createElement(FixedDataTableCellGroup, {
+	      key: 'right_fixed_cells',
+	      isScrolling: this.props.isScrolling,
+	      height: this.props.height,
+	      left: rightFixedColumnsWidth - this.props.width,
+	      width: rightFixedColumnsWidth,
+	      zIndex: 2,
+	      columns: this.props.rightFixedColumns,
 	      onColumnResize: this.props.onColumnResize,
 	      rowHeight: this.props.height,
 	      rowIndex: this.props.index
@@ -5625,7 +5721,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        { className: cx('fixedDataTableRowLayout/body') },
 	        fixedColumns,
 	        scrollableColumns,
-	        columnsShadow
+	        rightFixedColumns,
+	        leftColumnsShadow,
+	        rightColumnsShadow
 	      )
 	    );
 	  },
@@ -5638,20 +5736,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return width;
 	  },
 
-	  _renderColumnsShadow: function _renderColumnsShadow( /*number*/left) /*?object*/{
-	    if (left > 0) {
-	      var className = cx({
-	        'fixedDataTableRowLayout/fixedColumnsDivider': true,
-	        'fixedDataTableRowLayout/columnsShadow': this.props.scrollLeft > 0,
-	        'public/fixedDataTableRow/fixedColumnsDivider': true,
-	        'public/fixedDataTableRow/columnsShadow': this.props.scrollLeft > 0
-	      });
-	      var style = {
-	        left: left,
-	        height: this.props.height
-	      };
-	      return React.createElement('div', { className: className, style: style });
-	    }
+	  _renderLeftColumnsShadow: function _renderLeftColumnsShadow( /*number*/left, renderShadow /*boolean*/) /*?object*/{
+	    var className = cx({
+	      'fixedDataTableRowLayout/fixedColumnsDivider': true,
+	      'fixedDataTableRowLayout/columnsShadow': renderShadow,
+	      'public/fixedDataTableRow/fixedColumnsDivider': true,
+	      'public/fixedDataTableRow/columnsShadow': renderShadow
+	    });
+	    var style = {
+	      left: left,
+	      height: this.props.height
+	    };
+	    return React.createElement('div', { className: className, style: style });
+	  },
+
+	  _renderRightColumnsShadow: function _renderRightColumnsShadow( /*number*/left, renderShadow /*boolean*/) /*?object*/{
+	    var className = cx({
+	      'fixedDataTableRowLayout/fixedColumnsDivider': true,
+	      'fixedDataTableRowLayout/columnsShadow': renderShadow,
+	      'fixedDataTableRowLayout/rightColumnsShadow': renderShadow,
+	      'public/fixedDataTableRow/fixedColumnsDivider': true,
+	      'public/fixedDataTableRow/columnsShadow': renderShadow,
+	      'public/fixedDataTableRow/rightColumnsShadow': renderShadow
+	    });
+	    var style = {
+	      left: left - (renderShadow ? 5 : 2),
+	      height: this.props.height
+	    };
+	    return React.createElement('div', { className: className, style: style });
 	  },
 
 	  _onClick: function _onClick( /*object*/event) {

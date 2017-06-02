@@ -76,7 +76,47 @@ class ColumnGroupsExample extends React.Component {
             flexGrow={1}
             width={150}
           />
+          <Column
+            header={<Cell>Sentence</Cell>}
+            cell={<TextCell data={dataList} col="sentence" />}
+            flexGrow={1}
+            width={150}
+          />
+          <Column
+            header={<Cell>Sentence</Cell>}
+            cell={<TextCell data={dataList} col="sentence" />}
+            flexGrow={1}
+            width={150}
+          />
+          <Column
+            header={<Cell>Sentence</Cell>}
+            cell={<TextCell data={dataList} col="sentence" />}
+            flexGrow={1}
+            width={150}
+          />
+          <Column
+            header={<Cell>Sentence</Cell>}
+            cell={<TextCell data={dataList} col="sentence" />}
+            flexGrow={1}
+            width={150}
+          />
         </ColumnGroup>
+        <ColumnGroup
+         rightFixed={true}
+         header={<Cell>Test</Cell>}>
+         <Column
+           rightFixed={true}
+           header={<Cell>Quack</Cell>}
+           cell={<TextCell data={dataList} col="firstName" />}
+           width={150}
+         />
+         <Column
+           rightFixed={true}
+           header={<Cell>Wheee</Cell>}
+           cell={<TextCell data={dataList} col="lastName" />}
+           width={150}
+         />
+       </ColumnGroup>
       </Table>
     );
   }

@@ -38,6 +38,11 @@ var FixedDataTableRowImpl = React.createClass({
     fixedColumns: PropTypes.array.isRequired,
 
     /**
+     * Array of <FixedDataTableColumn /> for the right-aligned fixed columns.
+     */
+    rightFixedColumns: PropTypes.array.isRequired,
+
+    /**
      * Height of the row.
      */
     height: PropTypes.number.isRequired,
@@ -101,6 +106,11 @@ var FixedDataTableRowImpl = React.createClass({
     });
 
     var fixedColumnsWidth = this._getColumnsWidth(this.props.fixedColumns);
+    var scrollableColumnsWidth = this._getColumnsWidth(this.props.scrollableColumns);
+    var rightFixedColumnsWidth = this._getColumnsWidth(this.props.rightFixedColumns);
+
+    var scrollableAreaWidth = this.props.width - (fixedColumnsWidth + rightFixedColumnsWidth);
+
     var fixedColumns =
       <FixedDataTableCellGroup
         key="fixed_cells"
@@ -114,7 +124,13 @@ var FixedDataTableRowImpl = React.createClass({
         rowHeight={this.props.height}
         rowIndex={this.props.index}
       />;
-    var columnsShadow = this._renderColumnsShadow(fixedColumnsWidth);
+
+    var leftColumnsShadow = null;
+    if (fixedColumnsWidth > 0) {
+      leftColumnsShadow = this._renderLeftColumnsShadow(fixedColumnsWidth,
+        this.props.scrollLeft > 0);
+    }
+
     var scrollableColumns =
       <FixedDataTableCellGroup
         key="scrollable_cells"
@@ -122,9 +138,29 @@ var FixedDataTableRowImpl = React.createClass({
         height={this.props.height}
         left={this.props.scrollLeft}
         offsetLeft={fixedColumnsWidth}
-        width={this.props.width - fixedColumnsWidth}
+        width={scrollableAreaWidth}
         zIndex={0}
         columns={this.props.scrollableColumns}
+        onColumnResize={this.props.onColumnResize}
+        rowHeight={this.props.height}
+        rowIndex={this.props.index}
+      />;
+
+    var rightColumnsShadow = null;
+    if (rightFixedColumnsWidth > 0) {
+      rightColumnsShadow = this._renderRightColumnsShadow(this.props.width - rightFixedColumnsWidth,
+        this.props.scrollLeft < scrollableColumnsWidth - scrollableAreaWidth);
+    }
+
+    var rightFixedColumns =
+      <FixedDataTableCellGroup
+        key="right_fixed_cells"
+        isScrolling={this.props.isScrolling}
+        height={this.props.height}
+        left={rightFixedColumnsWidth - this.props.width}
+        width={rightFixedColumnsWidth}
+        zIndex={2}
+        columns={this.props.rightFixedColumns}
         onColumnResize={this.props.onColumnResize}
         rowHeight={this.props.height}
         rowIndex={this.props.index}
@@ -142,7 +178,9 @@ var FixedDataTableRowImpl = React.createClass({
         <div className={cx('fixedDataTableRowLayout/body')}>
           {fixedColumns}
           {scrollableColumns}
-          {columnsShadow}
+          {rightFixedColumns}
+          {leftColumnsShadow}
+          {rightColumnsShadow}
         </div>
       </div>
     );
@@ -156,20 +194,34 @@ var FixedDataTableRowImpl = React.createClass({
     return width;
   },
 
-  _renderColumnsShadow(/*number*/ left) /*?object*/ {
-    if (left > 0) {
-      var className = cx({
-        'fixedDataTableRowLayout/fixedColumnsDivider': true,
-        'fixedDataTableRowLayout/columnsShadow': this.props.scrollLeft > 0,
-        'public/fixedDataTableRow/fixedColumnsDivider': true,
-        'public/fixedDataTableRow/columnsShadow': this.props.scrollLeft > 0,
-      });
-      var style = {
-        left: left,
-        height: this.props.height
-      };
-      return <div className={className} style={style} />;
-    }
+  _renderLeftColumnsShadow(/*number*/ left, renderShadow /*boolean*/) /*?object*/ {
+    var className = cx({
+      'fixedDataTableRowLayout/fixedColumnsDivider': true,
+      'fixedDataTableRowLayout/columnsShadow': renderShadow,
+      'public/fixedDataTableRow/fixedColumnsDivider': true,
+      'public/fixedDataTableRow/columnsShadow': renderShadow,
+    });
+    var style = {
+      left: left,
+      height: this.props.height
+    };
+    return <div className={className} style={style} />;
+  },
+
+  _renderRightColumnsShadow(/*number*/ left, renderShadow /*boolean*/) /*?object*/ {
+    var className = cx({
+      'fixedDataTableRowLayout/fixedColumnsDivider': true,
+      'fixedDataTableRowLayout/columnsShadow': renderShadow,
+      'fixedDataTableRowLayout/rightColumnsShadow': renderShadow,
+      'public/fixedDataTableRow/fixedColumnsDivider': true,
+      'public/fixedDataTableRow/columnsShadow': renderShadow,
+      'public/fixedDataTableRow/rightColumnsShadow': renderShadow,
+    });
+    var style = {
+      left: left - (renderShadow ? 5 : 2),
+      height: this.props.height
+    };
+    return <div className={className} style={style} />;
   },
 
   _onClick(/*object*/ event) {
