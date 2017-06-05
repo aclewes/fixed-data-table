@@ -232,7 +232,22 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
   width: 0;
 }
 
+.fixedDataTableRowLayout_rightFixedColumnsDivider {
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+  border-left-style: solid;
+  border-left-width: 1px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 0;
+}
+
 .fixedDataTableRowLayout_columnsShadow {
+  width: 4px;
+}
+
+.fixedDataTableRowLayout_rightColumnsShadow {
   width: 4px;
 }
 
@@ -461,11 +476,16 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
   border-color: #d3d3d3;
 }
 
+.public_fixedDataTableRow_rightFixedColumnsDivider {
+  border-color: #d3d3d3;
+}
+
 .public_fixedDataTableRow_columnsShadow {
   background: 0 0 url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAABCAYAAAD5PA/NAAAAFklEQVQIHWPSkNeSBmJhTQVtbiDNCgASagIIuJX8OgAAAABJRU5ErkJggg==) repeat-y;
 }
 
 .public_fixedDataTableRow_rightColumnsShadow {
+  background: 0 0 url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAABCAYAAAD5PA/NAAAAFklEQVQIHWPSkNeSBmJhTQVtbiDNCgASagIIuJX8OgAAAABJRU5ErkJggg==) repeat-y;
   -webkit-transform: scaleX(-1);
   transform: scaleX(-1);
   -webkit-filter: FlipH;

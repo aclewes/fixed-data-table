@@ -212,15 +212,13 @@ var FixedDataTableRowImpl = React.createClass({
 
   _renderRightColumnsShadow(/*number*/ left, renderShadow /*boolean*/) /*?object*/ {
     var className = cx({
-      'fixedDataTableRowLayout/fixedColumnsDivider': true,
-      'fixedDataTableRowLayout/columnsShadow': renderShadow,
+      'fixedDataTableRowLayout/rightFixedColumnsDivider': true,
       'fixedDataTableRowLayout/rightColumnsShadow': renderShadow,
-      'public/fixedDataTableRow/fixedColumnsDivider': true,
-      'public/fixedDataTableRow/columnsShadow': renderShadow,
+      'public/fixedDataTableRow/rightFixedColumnsDivider': true,
       'public/fixedDataTableRow/rightColumnsShadow': renderShadow,
     });
     var style = {
-      left: left - (renderShadow ? 5 : 2),
+      left: left - (renderShadow ? 5 : 1),
       height: this.props.height
     };
     return <div className={className} style={style} />;

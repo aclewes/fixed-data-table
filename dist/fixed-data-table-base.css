@@ -232,7 +232,22 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
   width: 0;
 }
 
+.fixedDataTableRowLayout_rightFixedColumnsDivider {
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+  border-left-style: solid;
+  border-left-width: 1px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 0;
+}
+
 .fixedDataTableRowLayout_columnsShadow {
+  width: 4px;
+}
+
+.fixedDataTableRowLayout_rightColumnsShadow {
   width: 4px;
 }
 
