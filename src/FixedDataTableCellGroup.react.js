@@ -158,6 +158,10 @@ var FixedDataTableCellGroup = React.createClass({
      * header and footer in front of other rows.
      */
     zIndex: PropTypes.number.isRequired,
+
+    fixed: PropTypes.bool,
+
+    rightFixed: PropTypes.bool
   },
 
   shouldComponentUpdate(/*object*/ nextProps) /*boolean*/ {
@@ -192,7 +196,9 @@ var FixedDataTableCellGroup = React.createClass({
     return (
       <div
         style={style}
-        className={cx('fixedDataTableCellGroupLayout/cellGroupWrapper')}>
+        className={cx({'fixedDataTableCellGroupLayout/cellGroupWrapper': true,
+                       'public/fixedDataTableCellGroup/fixed': props.fixed,
+                       'public/fixedDataTableCellGroup/rightFixed': props.rightFixed})}>
         <FixedDataTableCellGroupImpl
           {...props}
           onColumnResize={onColumnResize}

@@ -5666,7 +5666,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      columns: this.props.fixedColumns,
 	      onColumnResize: this.props.onColumnResize,
 	      rowHeight: this.props.height,
-	      rowIndex: this.props.index
+	      rowIndex: this.props.index,
+	      fixed: true
 	    });
 
 	    var leftColumnsShadow = null;
@@ -5703,7 +5704,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      columns: this.props.rightFixedColumns,
 	      onColumnResize: this.props.onColumnResize,
 	      rowHeight: this.props.height,
-	      rowIndex: this.props.index
+	      rowIndex: this.props.index,
+	      rightFixed: true
 	    });
 
 	    return React.createElement(
@@ -5996,7 +5998,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Z-index on which the row will be displayed. Used e.g. for keeping
 	     * header and footer in front of other rows.
 	     */
-	    zIndex: PropTypes.number.isRequired
+	    zIndex: PropTypes.number.isRequired,
+
+	    fixed: PropTypes.bool,
+
+	    rightFixed: PropTypes.bool
 	  },
 
 	  shouldComponentUpdate: function shouldComponentUpdate( /*object*/nextProps) /*boolean*/{
@@ -6031,7 +6037,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      'div',
 	      {
 	        style: style,
-	        className: cx('fixedDataTableCellGroupLayout/cellGroupWrapper') },
+	        className: cx({ 'fixedDataTableCellGroupLayout/cellGroupWrapper': true,
+	          'public/fixedDataTableCellGroup/fixed': props.fixed,
+	          'public/fixedDataTableCellGroup/rightFixed': props.rightFixed }) },
 	      React.createElement(FixedDataTableCellGroupImpl, _extends({}, props, {
 	        onColumnResize: onColumnResize
 	      }))
